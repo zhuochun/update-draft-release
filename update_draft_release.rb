@@ -57,10 +57,12 @@ module UpdateDraftRelease
     end
 
     def update_draft_release
-      commit = "#{latest_user_commit.commit.message} #{latest_user_commit.sha}"
-      LOGGER.info "Prepare to insert line: #{commit}"
+      commit_message = Content.new(latest_user_commit.commit.message).title
 
-      body = ReleaseBody.new(draft_release.body)
+      line = "#{commit_message} #{latest_user_commit.sha}"
+      LOGGER.info "Prepare to insert line: #{line}"
+
+      body = Content.new(draft_release.body)
 
       if body.include? latest_user_commit.sha
         LOGGER.warn "Commit SHA '#{latest_user_commit.sha}' already exists"
@@ -68,10 +70,10 @@ module UpdateDraftRelease
       end
 
       if body.headings.empty?
-        body.append(commit)
+        body.append(line)
       else
         line_num = ask_where_to_insert_line(body)
-        body.insert(line_num, commit)
+        body.insert(line_num, line)
       end
 
       puts '##################################################'
@@ -118,13 +120,17 @@ module UpdateDraftRelease
     end
   end
 
-  class ReleaseBody
+  class Content
     attr_reader :body, :line_separator, :lines
 
     def initialize(body)
       @body = body
       @line_separator = ($1 if body =~ /(\r\n|\n)/)
       @lines = body.split @line_separator
+    end
+
+    def title
+      @lines.first
     end
 
     def headings

@@ -2,42 +2,43 @@ require 'Rspec'
 require './update_draft_release.rb'
 
 RSpec.describe UpdateDraftRelease do
-  let(:client) { double() }
-  let(:user) { double() }
+  let(:user) { double(login: 'user') }
   let(:repo) { 'random/repo' }
+  let(:client) { double(user: user) }
   let(:latest_release) { double() }
   let(:latest_commit) { double() }
   let(:release_body) { double() }
 
   before do
     allow(Octokit::Client).to receive(:new).and_return(client)
-    allow(client).to receive(:user).and_return(user)
   end
 
-  context 'true' do
+  context 'update_draft_release' do
     it 'is true' do
-      expect(true).to eq(true) # lah
+      expect(true).to eq(true)
     end
   end
 end
 
-RSpec.describe UpdateDraftRelease::ReleaseBody do
+RSpec.describe UpdateDraftRelease::Content do
   context '#initialize' do
     it 'parse body with \n' do
-      body = UpdateDraftRelease::ReleaseBody.new %(abc\nabc\n## efg)
+      body = UpdateDraftRelease::Content.new %(abc\nabc\n## efg)
       expect(body.lines).to eq(['abc', 'abc', '## efg'])
+      expect(body.title).to eq('abc')
       expect(body.headings).to eq(['## efg'])
     end
 
     it 'parse body with \r\n' do
-      body = UpdateDraftRelease::ReleaseBody.new %(abc\r\n## efg\r\nabc)
+      body = UpdateDraftRelease::Content.new %(abc\r\n## efg\r\nabc)
       expect(body.lines).to eq(['abc', '## efg', 'abc'])
+      expect(body.title).to eq('abc')
       expect(body.headings).to eq(['## efg'])
     end
   end
 
   context '#append' do
-    subject { UpdateDraftRelease::ReleaseBody.new %(line 1\nline 2\n) }
+    subject { UpdateDraftRelease::Content.new %(line 1\nline 2\n) }
 
     it 'add to the end' do
       subject.append('new line') 
@@ -47,7 +48,7 @@ RSpec.describe UpdateDraftRelease::ReleaseBody do
   end
 
   context '#insert' do
-    subject { UpdateDraftRelease::ReleaseBody.new %(line 1\nline 2\n) }
+    subject { UpdateDraftRelease::Content.new %(line 1\nline 2\n) }
 
     it 'add to the beginning' do
       subject.insert(0, 'new line') 
@@ -71,7 +72,7 @@ RSpec.describe UpdateDraftRelease::ReleaseBody do
   end
 
   context '#include?' do
-    subject { UpdateDraftRelease::ReleaseBody.new %(line 1\nline 2\n) }
+    subject { UpdateDraftRelease::Content.new %(line 1\nline 2\n) }
 
     it 'return true on inclusion' do
       expect(subject.include?('1')).to be(true)
@@ -84,7 +85,7 @@ RSpec.describe UpdateDraftRelease::ReleaseBody do
 
   context '#to_s' do
     let(:body) { %(line 1\n\nline 2) }
-    subject { UpdateDraftRelease::ReleaseBody.new body }
+    subject { UpdateDraftRelease::Content.new body }
 
     it 'construct back itself' do
       expect(subject.to_s).to eq(body)

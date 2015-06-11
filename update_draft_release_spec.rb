@@ -37,11 +37,29 @@ RSpec.describe UpdateDraftRelease::Content do
     end
   end
 
+  context '#line_separator' do
+    context 'no line_separator exists' do
+      subject { UpdateDraftRelease::Content.new(%(line 1)).line_separator }
+      it { is_expected.to eq(%(\r\n)) }
+    end
+
+    context 'line_separator exists' do
+      subject { UpdateDraftRelease::Content.new(%(line 1\nline 2)).line_separator }
+      it { is_expected.to eq(%(\n)) }
+    end
+
+    context 'mixed line_separator exists' do
+      subject { UpdateDraftRelease::Content.new(%(line 1\nline 2\r\n)).line_separator }
+      it { is_expected.to eq(%(\n)) }
+    end
+  end
+
   context '#append' do
-    subject { UpdateDraftRelease::Content.new %(line 1\nline 2\n) }
+    subject { UpdateDraftRelease::Content.new %(line 1\r\nline 2\r\n) }
 
     it 'add to the end' do
       subject.append('new line') 
+      expect(subject.line_separator).to eq(%(\r\n))
       expect(subject.lines.size).to eq(4)
       expect(subject.lines.last).to eq('new line')
     end

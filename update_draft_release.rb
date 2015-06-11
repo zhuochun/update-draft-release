@@ -125,7 +125,7 @@ module UpdateDraftRelease
 
     def initialize(body)
       @body = body
-      @line_separator = ($1 if body =~ /(\r\n|\n)/)
+      @line_separator = if body =~ /(\r\n|\n)/ then $1 else %(\r\n) end
       @lines = body.split @line_separator
     end
 

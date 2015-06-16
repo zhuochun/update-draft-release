@@ -33,7 +33,7 @@ module UpdateDraftRelease
         exit
       end
 
-      if !latest_release.draft || latest_release.name !~ /draft/i
+      if !latest_release.draft
         LOGGER.error "Latest release '#{latest_release.name}' is not a draft release"
         exit
       end
@@ -77,6 +77,8 @@ module UpdateDraftRelease
       end
 
       puts '##################################################'
+      puts draft_release.name
+      puts '=================================================='
       puts body.to_s
       puts '##################################################'
 

@@ -132,7 +132,7 @@ module UpdateDraftRelease
     end
 
     def title
-      @lines.first
+      @lines.first[0].upcase + @lines.first[1..-1]
     end
 
     def headings

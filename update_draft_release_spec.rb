@@ -23,16 +23,16 @@ end
 RSpec.describe UpdateDraftRelease::Content do
   context '#initialize' do
     it 'parse body with \n' do
-      body = UpdateDraftRelease::Content.new %(abc\nabc\n## efg)
-      expect(body.lines).to eq(['abc', 'abc', '## efg'])
-      expect(body.title).to eq('abc')
+      body = UpdateDraftRelease::Content.new %(abc Efg\nabc\n## efg)
+      expect(body.lines).to eq(['abc Efg', 'abc', '## efg'])
+      expect(body.title).to eq('Abc Efg')
       expect(body.headings).to eq(['## efg'])
     end
 
     it 'parse body with \r\n' do
       body = UpdateDraftRelease::Content.new %(abc\r\n## efg\r\nabc)
       expect(body.lines).to eq(['abc', '## efg', 'abc'])
-      expect(body.title).to eq('abc')
+      expect(body.title).to eq('Abc')
       expect(body.headings).to eq(['## efg'])
     end
   end
@@ -58,7 +58,7 @@ RSpec.describe UpdateDraftRelease::Content do
     subject { UpdateDraftRelease::Content.new %(line 1\r\nline 2\r\n) }
 
     it 'add to the end' do
-      subject.append('new line') 
+      subject.append('new line')
       expect(subject.line_separator).to eq(%(\r\n))
       expect(subject.lines.size).to eq(4)
       expect(subject.lines.last).to eq('new line')
@@ -69,20 +69,20 @@ RSpec.describe UpdateDraftRelease::Content do
     subject { UpdateDraftRelease::Content.new %(line 1\nline 2\n) }
 
     it 'add to the beginning' do
-      subject.insert(0, 'new line') 
+      subject.insert(0, 'new line')
       expect(subject.lines.size).to eq(3)
       expect(subject.lines.first).to eq('new line')
     end
 
     it 'add to any lines in between' do
-      subject.insert(1, 'new line') 
+      subject.insert(1, 'new line')
       expect(subject.lines.size).to eq(4)
       expect(subject.lines[1]).to eq('')
       expect(subject.lines[2]).to eq('new line')
     end
 
     it 'add to the end' do
-      subject.insert(2, 'new line') 
+      subject.insert(2, 'new line')
       expect(subject.lines.size).to eq(4)
       expect(subject.lines[2]).to eq('')
       expect(subject.lines[3]).to eq('new line')

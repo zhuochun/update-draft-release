@@ -1,5 +1,5 @@
-require 'Rspec'
-require './update_draft_release.rb'
+require 'spec_helper'
+require 'update_draft_release'
 
 RSpec.describe UpdateDraftRelease do
   let(:user) { double(login: 'user') }

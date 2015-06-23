@@ -1,3 +1,10 @@
+PATH
+  remote: .
+  specs:
+    update-draft-release (0.1.0)
+      netrc (~> 0.10.3)
+      octokit (~> 3.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -9,6 +16,7 @@ GEM
     netrc (0.10.3)
     octokit (3.8.0)
       sawyer (~> 0.6.0, >= 0.5.3)
+    rake (10.4.2)
     rspec (3.2.0)
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
@@ -30,6 +38,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  netrc (~> 0.10.3)
-  octokit (~> 3.0)
+  rake (~> 10.4.2)
   rspec (~> 3.2.0)
+  update-draft-release!

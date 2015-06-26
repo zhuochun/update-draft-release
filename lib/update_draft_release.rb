@@ -33,7 +33,7 @@ module UpdateDraftRelease
         exit
       end
 
-      if !latest_release.draft
+      unless latest_release.draft
         LOGGER.error "Latest release '#{latest_release.name}' is not a draft release"
         exit
       end
@@ -44,16 +44,16 @@ module UpdateDraftRelease
     def latest_user_commit
       return @latest_user_commit if defined?(@latest_user_commit)
 
-      @latest_user_commit = @client.commits(@repo).take(5).select do |commit|
-        !commit.committer.nil? && commit.committer.login == @user.login
-      end.first
+      latest_commit = @client.commits(@repo).take(9).find do |commit|
+        commit.committer && commit.committer.login == @user.login
+      end
 
-      if @latest_user_commit.nil?
+      if latest_commit.nil?
         LOGGER.error "No commit from '#{@user.login}' is found in '#{@repo}'"
         exit
       end
 
-      @latest_user_commit
+      @latest_user_commit = latest_commit
     end
 
     def update_draft_release
@@ -66,7 +66,7 @@ module UpdateDraftRelease
 
       if body.include? latest_user_commit.sha
         LOGGER.warn "Commit SHA '#{latest_user_commit.sha}' already exists"
-        return
+        exit
       end
 
       if body.headings.empty?
@@ -83,18 +83,20 @@ module UpdateDraftRelease
       puts '##################################################'
 
       if ask_confirmation == false
-        LOGGER.info('Update cancelled')
-        return
+        LOGGER.warn('Update cancelled')
+        exit
       end
 
-      LOGGER.info("Updating to URL: #{draft_release.url}")
+      LOGGER.info("Update to URL: #{draft_release.url}")
       @client.update_release(draft_release.url, body: body.to_s)
 
+      LOGGER.info("Update draft release completed!")
       `open #{draft_release.url}` if @opts[:open_url_after_update]
     end
 
     def ask_where_to_insert_line(body)
       headings = body.headings.map { |heading| body.lines.index(heading) }
+      headings = [0, *headings, body.lines.size - 1].uniq
 
       puts '##################################################'
       puts 'Please select insert position: '

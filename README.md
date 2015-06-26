@@ -4,7 +4,7 @@ Add your latest commit message to your GitHub repository's draft release.
 
 ## Setup
 
-Clone repo, run `rake install` in it to install gem.
+Install this gem by clone this repo, run `rake install` in it.
 
 Create `~/.netrc` file with your GitHub login/password:
 
@@ -17,7 +17,7 @@ machine api.github.com
 ## Usage
 
 ```
-$ update_draft_release your/repo
+$ update-draft-release your/repo
 #
 # I, [2015-06-26T23:40:00.954754 #15147]  INFO -- : Logged in as: zhuochun
 # I, [2015-06-26T23:40:00.954814 #15147]  INFO -- : Repository used: your/repo
@@ -28,4 +28,4 @@ $ update_draft_release your/repo
 
 ## More
 
-Run `gem uninstall update_draft_release` to uninstall.
+Run `gem uninstall update-draft-release` to uninstall.

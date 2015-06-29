@@ -26,7 +26,7 @@ module UpdateDraftRelease
     def draft_release
       return @draft_release if defined?(@draft_release)
 
-      latest_release = @client.releases(@repo).first
+      latest_release = @client.releases(@repo).take(9).find { |release| release.draft }
 
       if latest_release.nil?
         LOGGER.error "Unable to find any release in '#{@repo}'"

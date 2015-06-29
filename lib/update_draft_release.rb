@@ -20,7 +20,7 @@ module UpdateDraftRelease
       @repo = repo
       LOGGER.info "Repository used: #{@repo}"
 
-      @opts = opts.merge DEFAULT_OPTIONS
+      @opts = DEFAULT_OPTIONS.merge opts
     end
 
     def draft_release
@@ -91,7 +91,7 @@ module UpdateDraftRelease
       @client.update_release(draft_release.url, body: body.to_s)
 
       LOGGER.info("Update draft release completed!")
-      `open #{draft_release.url}` if @opts[:open_url_after_update]
+      `open #{draft_release.html_url}` if @opts[:open_url_after_update]
     end
 
     def ask_where_to_insert_line(body)

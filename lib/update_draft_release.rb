@@ -97,6 +97,13 @@ module UpdateDraftRelease
     end
 
     def ask_where_to_insert_line(body)
+      return body.lines.size if @opts[:insert_at_the_end]
+
+      if insert_before_line = @opts[:insert_before]
+        line_no = body.lines.index(insert_before_line)
+        return [0, line_no - 1].max unless line_no.nil?
+      end
+
       headings = body.headings.map { |heading| body.lines.index(heading) }
       headings = [0, *headings, body.lines.size - 1].uniq
 

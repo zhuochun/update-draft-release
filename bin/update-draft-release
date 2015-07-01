@@ -4,9 +4,31 @@
 require 'update_draft_release'
 
 if ARGV.empty? || ARGV[0].empty?
-  puts "Missing: repository name"
+  puts 'Missing: repository name'
   exit
 end
 
-runner = UpdateDraftRelease::Runner.new ARGV[0]
+repo = 'why_you_no_repo'
+options = {}
+
+# Acceptable options:
+#
+# --at-the-end
+# --before-gamma
+# --open-url
+#
+ARGV.each do |arg|
+  case arg
+  when '--at-the-end'
+    options[:insert_at_the_end] = true
+  when '--before-gamma'
+    options[:insert_before] = '## Gamma ##'
+  when '--open-url'
+    options[:open_url_after_update] = true
+  else
+    repo = arg
+  end
+end
+
+runner = UpdateDraftRelease::Runner.new(repo, options)
 runner.update_draft_release

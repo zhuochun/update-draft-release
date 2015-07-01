@@ -2,20 +2,49 @@ require 'spec_helper'
 require 'update_draft_release'
 
 RSpec.describe UpdateDraftRelease do
+  let(:logger) { double() }
   let(:user) { double(login: 'user') }
-  let(:repo) { 'random/repo' }
   let(:client) { double(user: user) }
-  let(:latest_release) { double() }
-  let(:latest_commit) { double() }
-  let(:release_body) { double() }
+  let(:draft) { double(draft: true, body: '') }
+  let(:commit) do
+    double(committer: double(login: 'user'),
+           commit: double(message: 'message'),
+           sha: 'abc')
+  end
 
   before do
+    allow(Logger).to receive(:new).and_return(logger)
     allow(Octokit::Client).to receive(:new).and_return(client)
   end
 
-  context 'update_draft_release' do
-    it 'is true' do
-      expect(true).to eq(true)
+  context 'update_draft_release without valid release' do
+    let(:runner) { UpdateDraftRelease::Runner.new('repo/repo') }
+
+    it 'exit on no release' do
+      allow(client).to receive(:releases).and_return([])
+      expect { runner.update_draft_release }.to raise_error(SystemExit)
+    end
+
+    it 'exit on no draft release' do
+      allow(client).to receive(:releases).and_return([double(draft: false)])
+      expect { runner.update_draft_release }.to raise_error(SystemExit)
+    end
+  end
+
+  context 'update_draft_release without valid commits' do
+    let(:runner) { UpdateDraftRelease::Runner.new('repo/repo') }
+
+    before { allow(client).to receive(:releases).and_return([draft]) }
+
+    it 'exit on no commits' do
+      allow(client).to receive(:commits).and_return([])
+      expect { runner.update_draft_release }.to raise_error(SystemExit)
+    end
+
+    it 'exit on all commits are in body' do
+      allow(client).to receive(:commits).and_return([commit])
+      allow(draft).to receive(:body).and_return("Message #{commit.sha}")
+      expect { runner.update_draft_release }.to raise_error(SystemExit)
     end
   end
 end
@@ -57,11 +86,18 @@ RSpec.describe UpdateDraftRelease::Content do
   context '#append' do
     subject { UpdateDraftRelease::Content.new %(line 1\r\nline 2\r\n) }
 
-    it 'add to the end' do
+    it 'add single line to the end' do
       subject.append('new line')
       expect(subject.line_separator).to eq(%(\r\n))
       expect(subject.lines.size).to eq(4)
       expect(subject.lines.last).to eq('new line')
+    end
+
+    it 'add lines to the end' do
+      subject.append(['new line 1', 'new line 2'])
+      expect(subject.line_separator).to eq(%(\r\n))
+      expect(subject.lines.size).to eq(6)
+      expect(subject.lines.last).to eq('new line 2')
     end
   end
 

@@ -23,66 +23,23 @@ module UpdateDraftRelease
       @opts = DEFAULT_OPTIONS.merge opts
     end
 
-    def draft_release
-      return @draft_release if defined?(@draft_release)
-
-      latest_release = @client.releases(@repo).take(9).find { |release| release.draft }
-
-      if latest_release.nil?
-        LOGGER.error "Unable to find any release in '#{@repo}'"
-        exit
-      end
-
-      unless latest_release.draft
-        LOGGER.error "Latest release '#{latest_release.name}' is not a draft release"
-        exit
-      end
-
-      @draft_release = latest_release
-    end
-
-    def latest_user_commit
-      return @latest_user_commit if defined?(@latest_user_commit)
-
-      latest_commit = @client.commits(@repo).take(9).find do |commit|
-        commit.committer && commit.committer.login == @user.login
-      end
-
-      if latest_commit.nil?
-        LOGGER.error "No commit from '#{@user.login}' is found in '#{@repo}'"
-        exit
-      end
-
-      @latest_user_commit = latest_commit
-    end
-
     def update_draft_release
-      commit_message = Content.new(latest_user_commit.commit.message).title
-
-      line = "#{commit_message} #{latest_user_commit.sha}"
-      LOGGER.info "Prepare to insert line: #{line}"
-
       body = Content.new(draft_release.body)
 
-      if body.include? latest_user_commit.sha
-        LOGGER.warn "Commit SHA '#{latest_user_commit.sha}' already exists"
+      lines = latest_user_commit_lines(body)
+      if lines.empty?
+        LOGGER.error "All commits are already added in release"
         exit
       end
 
       if body.headings.empty?
-        body.append(line)
+        body.append(lines)
       else
         line_num = ask_where_to_insert_line(body)
-        body.insert(line_num, line)
+        body.insert(line_num, lines)
       end
 
-      puts '##################################################'
-      puts draft_release.name
-      puts '=================================================='
-      puts body.to_s
-      puts '##################################################'
-
-      if ask_confirmation == false
+      if ask_confirmation(body) == false
         LOGGER.warn('Update cancelled')
         exit
       end
@@ -92,6 +49,51 @@ module UpdateDraftRelease
 
       LOGGER.info("Update draft release completed!")
       `open #{draft_release.html_url}` if @opts[:open_url_after_update]
+    end
+
+    private
+
+    def draft_release
+      return @draft_release if defined?(@draft_release)
+
+      latest_release = @client.releases(@repo).take(9).find do |release|
+        release.draft
+      end
+
+      if latest_release.nil?
+        LOGGER.error "Unable to find any release or draft release in '#{@repo}'"
+        exit
+      end
+
+      @draft_release = latest_release
+    end
+
+    def latest_user_commit_lines(body)
+      latest_user_commits.map do |commit|
+        if body.include?(commit.sha)
+          LOGGER.warn "Commit SHA '#{commit.sha}' already exists"
+          next nil
+        end
+
+        line = "#{Content.new(commit.commit.message).title} #{commit.sha}"
+        LOGGER.info "Prepare to insert line: #{line}"
+        line
+      end.compact
+    end
+
+    def latest_user_commits
+      return @latest_user_commits if defined?(@latest_user_commits)
+
+      latest_commits = @client.commits(@repo).take(9).select do |commit|
+        commit.committer && commit.committer.login == @user.login
+      end
+
+      if latest_commits.empty?
+        LOGGER.error "No recent commit from '#{@user.login}' is found in '#{@repo}'"
+        exit
+      end
+
+      @latest_user_commits = latest_commits
     end
 
     def ask_where_to_insert_line(body)
@@ -116,8 +118,14 @@ module UpdateDraftRelease
       $stdin.gets.chomp.to_i + 1
     end
 
-    def ask_confirmation
+    def ask_confirmation(body)
       return true if @opts[:skip_confirmation]
+
+      puts '##################################################'
+      puts draft_release.name
+      puts '=================================================='
+      puts body.to_s
+      puts '##################################################'
 
       print 'Ok? (Y/N): '
       $stdin.gets.chomp.upcase == 'Y'
@@ -141,15 +149,15 @@ module UpdateDraftRelease
       @lines.select { |line| line.match(/^#+\s+.+/) }
     end
 
-    def append(line)
-      @lines << '' << line
+    def append(lines)
+      Array(lines).each { |line| @lines << '' << line }
     end
 
-    def insert(line_num, line)
+    def insert(line_num, lines)
       if line_num == 0
-        @lines[line_num,0] = line
+        @lines[line_num,0] = Array(lines)
       else
-        @lines[line_num,0] = ['', line]
+        @lines[line_num,0] = ['', *Array(lines)]
       end
     end
 

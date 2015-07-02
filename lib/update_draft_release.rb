@@ -1,5 +1,7 @@
 require 'Logger'
-require 'Octokit'
+
+require 'content'
+require 'github'
 
 module UpdateDraftRelease
   LOGGER = Logger.new(STDOUT)
@@ -9,28 +11,19 @@ module UpdateDraftRelease
     DEFAULT_OPTIONS = { skip_confirmation: false,
                         open_url_after_update: false }
 
-    attr_reader :client, :user, :repo, :opts
-
     def initialize(repo, opts = {})
-      @client = Octokit::Client.new(netrc: true)
-
-      @user = client.user
-      LOGGER.info "Logged in as: #{@user.login}"
-
-      @repo = repo
-      LOGGER.info "Repository used: #{@repo}"
-
+      @github = Github.open(repo)
       @opts = DEFAULT_OPTIONS.merge opts
+
+      LOGGER.info "Logged in as: #{@github.user.login}"
+      LOGGER.info "Repository used: #{repo}"
     end
 
     def update_draft_release
-      body = Content.new(draft_release.body)
+      draft_release = get_draft_release
+      lines = get_user_commit_lines
 
-      lines = latest_user_commit_lines(body)
-      if lines.empty?
-        LOGGER.error "All commits are already added in release"
-        exit
-      end
+      body = Content.new(draft_release.body)
 
       if body.headings.empty?
         body.append(lines)
@@ -39,61 +32,71 @@ module UpdateDraftRelease
         body.insert(line_num, lines)
       end
 
-      if ask_confirmation(body) == false
+      unless ask_confirmation(draft_release.name, body)
         LOGGER.warn('Update cancelled')
         exit
       end
 
-      LOGGER.info("Update to URL: #{draft_release.url}")
-      @client.update_release(draft_release.url, body: body.to_s)
+      LOGGER.info("Updating to URL: #{draft_release.url}")
+      @github.update_release(draft_release, body)
 
-      LOGGER.info("Update draft release completed!")
+      LOGGER.info("Release '#{draft_release.name}' updated!")
       `open #{draft_release.html_url}` if @opts[:open_url_after_update]
     end
 
     private
 
-    def draft_release
-      return @draft_release if defined?(@draft_release)
+    def get_draft_release
+      draft_releases = @github.draft_releases
 
-      latest_release = @client.releases(@repo).take(9).find do |release|
-        release.draft
-      end
-
-      if latest_release.nil?
-        LOGGER.error "Unable to find any release or draft release in '#{@repo}'"
+      if draft_releases.empty?
+        LOGGER.error "Unable to find any drafts/releases in '#{@github.repo}'"
         exit
       end
 
-      @draft_release = latest_release
+      ask_which_release(draft_releases)
     end
 
-    def latest_user_commit_lines(body)
-      latest_user_commits.map do |commit|
-        if body.include?(commit.sha)
-          LOGGER.warn "Commit SHA '#{commit.sha}' already exists"
+    def get_user_commit_lines
+      if @github.user_commits.empty?
+        LOGGER.error "No recent commit from '#{@github.user.login}' is found in '#{@github.repo}'"
+        exit
+      end
+
+      release_bodies = @github.releases.map(&:body).join
+
+      lines = @github.user_commits.map do |commit|
+        line = "#{Content.new(commit.commit.message).title} #{commit.sha}"
+
+        if release_bodies.include?(commit.sha[0..6])
+          LOGGER.warn "Commit '#{line}' exists"
           next nil
         end
 
-        line = "#{Content.new(commit.commit.message).title} #{commit.sha}"
         LOGGER.info "Prepare to insert line: #{line}"
         line
       end.compact
-    end
 
-    def latest_user_commits
-      return @latest_user_commits if defined?(@latest_user_commits)
-
-      latest_commits = @client.commits(@repo).take(9).select do |commit|
-        commit.committer && commit.committer.login == @user.login
-      end
-
-      if latest_commits.empty?
-        LOGGER.error "No recent commit from '#{@user.login}' is found in '#{@repo}'"
+      if lines.empty?
+        LOGGER.error "All commits already added in releases"
         exit
       end
 
-      @latest_user_commits = latest_commits
+      lines
+    end
+
+    def ask_which_release(releases)
+      return releases.first if releases.size == 1
+
+      puts '##################################################'
+      puts 'Please select insert position: '
+      puts '##################################################'
+      releases.each_with_index do |release, i|
+        puts "#{i} -> #{release.name}"
+      end
+
+      print 'Enter number: '
+      releases[$stdin.gets.chomp.to_i]
     end
 
     def ask_where_to_insert_line(body)
@@ -125,55 +128,17 @@ module UpdateDraftRelease
       $stdin.gets.chomp.to_i + 1
     end
 
-    def ask_confirmation(body)
-      return true if @opts[:skip_confirmation]
-
+    def ask_confirmation(name, body)
       puts '##################################################'
-      puts draft_release.name
+      puts name
       puts '=================================================='
       puts body.to_s
       puts '##################################################'
 
+      return true if @opts[:skip_confirmation]
+
       print 'Ok? (Y/N): '
       $stdin.gets.chomp.upcase == 'Y'
-    end
-  end
-
-  class Content
-    attr_reader :body, :line_separator, :lines
-
-    def initialize(body)
-      @body = body
-      @line_separator = if body =~ /(\r\n|\n)/ then $1 else %(\r\n) end
-      @lines = body.split @line_separator
-    end
-
-    def title
-      @lines.first[0].upcase + @lines.first[1..-1]
-    end
-
-    def headings
-      @lines.select { |line| line.match(/^#+\s+.+/) }
-    end
-
-    def append(lines)
-      Array(lines).each { |line| @lines << '' << line }
-    end
-
-    def insert(line_num, lines)
-      if line_num == 0
-        @lines[line_num,0] = Array(lines)
-      else
-        @lines[line_num,0] = ['', *Array(lines)]
-      end
-    end
-
-    def include? sha
-      @body.include? sha
-    end
-
-    def to_s
-      @lines.join @line_separator
     end
   end
 end

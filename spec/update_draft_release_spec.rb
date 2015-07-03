@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'update_draft_release'
 
 RSpec.describe UpdateDraftRelease::Runner do
-  let(:logger) { double() }
   let(:user) { double(login: 'user') }
   let(:client) { double(user: user) }
   let(:draft) { double(draft: true, name: 'draft', url: 'http://draft/', body: 'draft') }
@@ -14,7 +13,6 @@ RSpec.describe UpdateDraftRelease::Runner do
   end
 
   before do
-    allow(Logger).to receive(:new).and_return(logger)
     allow(Octokit::Client).to receive(:new).and_return(client)
   end
 
@@ -29,6 +27,14 @@ RSpec.describe UpdateDraftRelease::Runner do
     it 'exit on no draft release' do
       allow(client).to receive(:releases).and_return([double(draft: false)])
       expect { runner.update_draft_release }.to raise_error(SystemExit)
+    end
+
+    it 'ask which release on multiple draft releases' do
+      allow(client).to receive(:releases).and_return([draft, draft])
+
+      expect($stdin).to receive(:gets).and_return('1')
+      expect(client).to receive(:commits).and_return([])
+      expect { runner.update_draft_release }.to output.to_stdout.and raise_error(SystemExit)
     end
   end
 

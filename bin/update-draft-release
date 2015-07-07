@@ -18,13 +18,17 @@ options = {}
 # --open-url
 #
 ARGV.each do |arg|
-  case arg
-  when '--at-the-end'
-    options[:insert_at_the_end] = true
-  when '--before-gamma'
-    options[:insert_before] = '## Gamma ##'
-  when '--open-url'
+  case
+  when arg.match(/^--in-[A-z-]+$/)
+    options[:insert_into] = arg[5..-1]
+  when arg == '--open-url'
     options[:open_url_after_update] = true
+  when arg == '--at-the-end'
+    options[:insert_at_the_end] = true
+  when arg == '--create-heading'
+    options[:create_heading] = true
+  when arg == '--skip-confirmation'
+    options[:skip_confirmation] = true
   else
     repo = arg
   end

@@ -54,26 +54,33 @@ RSpec.describe UpdateDraftRelease::Content do
   end
 
   context '#insert' do
-    subject { UpdateDraftRelease::Content.new %(line 1\nline 2\n) }
+    subject { UpdateDraftRelease::Content.new %(line 1\nline 2\n\nline 3\n) }
 
     it 'add to the beginning' do
       subject.insert(0, 'new line')
-      expect(subject.lines.size).to eq(4)
+      expect(subject.lines.size).to eq(6)
       expect(subject.lines.first).to eq('new line')
     end
 
     it 'add to any lines in between' do
       subject.insert(1, 'new line')
-      expect(subject.lines.size).to eq(4)
+      expect(subject.lines.size).to eq(6)
       expect(subject.lines[1]).to eq('')
       expect(subject.lines[2]).to eq('new line')
     end
 
-    it 'add to the end' do
+    it 'avoids double newlines' do
       subject.insert(2, 'new line')
-      expect(subject.lines.size).to eq(4)
+      expect(subject.lines.size).to eq(6)
       expect(subject.lines[2]).to eq('')
       expect(subject.lines[3]).to eq('new line')
+    end
+
+    it 'add to the end' do
+      subject.insert(3, 'new line')
+      expect(subject.lines.size).to eq(6)
+      expect(subject.lines[3]).to eq('')
+      expect(subject.lines[4]).to eq('new line')
     end
   end
 

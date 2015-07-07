@@ -21,7 +21,7 @@ module UpdateDraftRelease
     end
 
     def insert(line_num, new_lines)
-      if line_num == 0 || @lines[line_num - 1] =~ /\s/
+      if line_num == 0 || @lines[line_num - 1] =~ /^\s$/
         @lines[line_num,0] = Array(new_lines).flat_map { |line| [line, ''] }
       else
         @lines[line_num,0] = Array(new_lines).flat_map { |line| ['', line] }

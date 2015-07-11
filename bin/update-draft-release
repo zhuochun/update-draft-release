@@ -17,6 +17,7 @@ options = {}
 # --in-assignment
 # --in-top-level
 # --at-the-end
+# --create-heading
 # --open-url
 # --skip-confirmation
 #

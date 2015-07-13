@@ -13,18 +13,28 @@ options = {}
 
 # Acceptable options:
 #
+# --in-gamma
+# --in-assignment
+# --in-top-level
 # --at-the-end
-# --before-gamma
+# --create-heading
 # --open-url
+# --skip-confirmation
 #
 ARGV.each do |arg|
   case arg
+  when /^--in-(\w+)$/
+    options[:insert_into] = $1.gsub('_', ' ')
+  when '--in-top-level'
+    options[:insert_into] = 'top-level'
   when '--at-the-end'
     options[:insert_at_the_end] = true
-  when '--before-gamma'
-    options[:insert_before] = '## Gamma ##'
+  when '--create-heading'
+    options[:create_heading] = true
   when '--open-url'
     options[:open_url_after_update] = true
+  when '--skip-confirmation'
+    options[:skip_confirmation] = true
   else
     repo = arg
   end

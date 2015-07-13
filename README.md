@@ -26,6 +26,20 @@ $ update-draft-release your/repo
 #
 ```
 
+## Options
+
+`--in-top-level`: Insert into top level.
+
+`--in-xxx`: Insert into the section named 'xxx'. E.g. `in-gamma`.
+
+`--at-the-end`: Insert at the end.
+
+`--create-heading`: Create a new heading if the section specified by `--in-xxx` is not found.
+
+`--skip-confirmation`: Skip the confirmation. :trollface:
+
+`--open-url`: Open the url of the release.
+
 ## More
 
 Run `gem uninstall update-draft-release` to uninstall.

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'update-draft-release'
-  s.version     = '0.2.1'
+  s.version     = '0.2.3'
   s.authors     = ['Wang Zhuochun']
   s.email       = 'zhuochun@hotmail.com'
 

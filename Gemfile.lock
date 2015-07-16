@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    update-draft-release (0.2.0)
+    update-draft-release (0.2.1)
       netrc (~> 0.10.3)
       octokit (~> 3.0)
 
@@ -41,3 +41,6 @@ DEPENDENCIES
   rake (~> 10.4.2)
   rspec (~> 3.2.0)
   update-draft-release!
+
+BUNDLED WITH
+   1.10.5

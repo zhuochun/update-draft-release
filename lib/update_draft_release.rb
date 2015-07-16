@@ -6,6 +6,9 @@ require 'github'
 module UpdateDraftRelease
   LOGGER = Logger.new(STDOUT)
   LOGGER.level = Logger::INFO
+  LOGGER.formatter = proc do |severity, datetime, progname, msg|
+    "#{severity}: #{msg}\n"
+  end
 
   class Runner
     DEFAULT_OPTIONS = { skip_confirmation: false,
@@ -13,7 +16,7 @@ module UpdateDraftRelease
 
     def initialize(repo, opts = {})
       @github = Github.open(repo)
-      @opts = DEFAULT_OPTIONS.merge opts
+      @opts = DEFAULT_OPTIONS.merge(opts)
 
       LOGGER.info "Logged in as: #{@github.user.login}"
       LOGGER.info "Repository used: #{repo}"
@@ -37,7 +40,7 @@ module UpdateDraftRelease
         exit
       end
 
-      LOGGER.info("Updating to URL: #{draft_release.url}")
+      LOGGER.info("Updating to URL: #{draft_release.html_url}")
       @github.update_release(draft_release, body)
 
       LOGGER.info("Release '#{draft_release.name}' updated!")
@@ -69,7 +72,7 @@ module UpdateDraftRelease
         line = "#{Content.new(commit.commit.message).title} #{commit.sha}"
 
         if release_bodies.include?(commit.sha[0..6])
-          LOGGER.warn "Commit '#{line}' exists"
+          LOGGER.warn "Commit existed: #{line}"
           next nil
         end
 
@@ -78,7 +81,7 @@ module UpdateDraftRelease
       end.compact
 
       if lines.empty?
-        LOGGER.error "All commits already added in releases"
+        LOGGER.error "All commits have already added in releases"
         exit
       end
 

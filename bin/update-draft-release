@@ -35,6 +35,9 @@ ARGV.each do |arg|
     options[:open_url_after_update] = true
   when '--skip-confirmation'
     options[:skip_confirmation] = true
+  when /--([-\w]+)/
+    puts "Invalid option: --#{$1}"
+    exit
   else
     repo = arg
   end

@@ -4,7 +4,7 @@ require 'update_draft_release'
 RSpec.describe UpdateDraftRelease::Runner do
   let(:user) { double(login: 'user') }
   let(:client) { double(user: user) }
-  let(:draft) { double(draft: true, name: 'draft', url: 'http://draft/', body: 'draft') }
+  let(:draft) { double(draft: true, name: 'draft', url: 'http://draft/', html_url: 'http://draft/html', body: 'draft') }
   let(:release) { double(draft: false, name: '2015-07-02', body: 'release') }
   let(:commit) do
     double(committer: double(login: 'user'),

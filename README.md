@@ -18,27 +18,30 @@ machine api.github.com
 
 ```
 $ update-draft-release your/repo
-#
-# I, [2015-06-26T23:40:00.954754 #15147]  INFO -- : Logged in as: zhuochun
-# I, [2015-06-26T23:40:00.954814 #15147]  INFO -- : Repository used: your/repo
-# I, [2015-06-26T23:40:02.282133 #15147]  INFO -- : Prepare to insert line: bla bla ddf3e5aa3505e4d5c0bf29055187d13e5e83c909
-# …
-#
+
+INFO: Logged in as: zhuochun
+INFO: Repository used: your/repo
+INFO: Prepare to insert line: New commit e4d5c0bf29055187d13e5e83c909
+##################################################
+Draft
+==================================================
+Old commit 11124f700882108e69ecdcf04074
+
+New commit e4d5c0bf29055187d13e5e83c909
+##################################################
+Ok? (Y/N): y
+INFO: Updating to URL: https://www.github.com/your/repo/draft
+INFO: Release 'Draft' updated!
 ```
 
-## Options
+### Options
 
-`--in-top-level`: Insert into top level.
-
-`--in-xxx`: Insert into the section named 'xxx'. E.g. `in-gamma`.
-
-`--at-the-end`: Insert at the end.
-
-`--create-heading`: Create a new heading if the section specified by `--in-xxx` is not found.
-
-`--skip-confirmation`: Skip the confirmation. :trollface:
-
-`--open-url`: Open the url of the release.
+- `--at-top-level`: Insert into top level.
+- `--at-the-end`: Insert at the end.
+- `--in-secton_name`: Insert into the section with heading 'Section Name'. E.g. `--in-gamma`.
+- `--create-heading`: Create a new section if not exists, used with `--in-secton_name`.
+- `--skip-confirmation`: Skip the final confirmation. :trollface:
+- `--open-url`: Open the release URL after update.
 
 ## More
 

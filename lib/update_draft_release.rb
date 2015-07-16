@@ -103,42 +103,32 @@ module UpdateDraftRelease
     end
 
     def ask_where_to_insert_line(body)
-      return body.lines.size if @opts[:insert_at_the_end]
-
-      if @opts.has_key?(:insert_into)
-        heading_line_numbers = []
-        next_heading_index = 0
-        heading_found = @opts[:insert_into] == 'top-level' || false
-
-        for i in 0...body.lines.size
-          if body.lines[i] =~ /^## /
-            heading_line_numbers.push(i)
-            if body.lines[i] =~ /#{@opts[:insert_into]}/i
-              next_heading_index = heading_line_numbers.size
-              heading_found = true
-            end
-          end
-        end
-
-        if heading_found
-          if heading_line_numbers.size > next_heading_index
-            return heading_line_numbers[next_heading_index] - 1
-          else
-            return body.lines.size
-          end
-        elsif @opts[:create_heading]
-          body.append(["## #{@opts[:insert_into].capitalize} ##"])
-          return body.lines.size
-        end
+      if @opts[:insert_at_the_end]
+        return body.lines.size
       end
 
-      headings = body.headings.map { |heading| body.lines.index(heading) }
-      headings = [0, *headings, body.lines.size - 1].uniq
+      headings = body.heading_indexes
+
+      if @opts[:insert_at_top_level] && headings
+        return headings.empty? ? body.lines.size : [0, headings[0] - 1].max
+      end
+
+      if @opts[:insert_at] && (index = body.find_heading(@opts[:insert_at]))
+        return body.lines.size if headings[-1] == index
+        return headings[headings.find(index) + 1] - 1
+      end
+
+      if @opts[:insert_at] && @opts[:create_heading]
+        body.append(["## #{@opts[:insert_at].capitalize} ##"])
+        return body.lines.size
+      end
 
       puts '##################################################'
       puts 'Please select insert position: '
       puts '##################################################'
-      headings.each do |heading|
+
+      candidates = [0, *headings, body.lines.size - 1].uniq
+      candidates.each do |heading|
         start_line_num = [heading - 3, 0].max
         end_line_num   = [heading + 3, body.lines.size - 1].min
 

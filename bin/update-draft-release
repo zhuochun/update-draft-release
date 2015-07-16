@@ -15,7 +15,7 @@ options = {}
 #
 # --in-gamma
 # --in-assignment
-# --in-top-level
+# --in-top-level/--at-top-level
 # --at-the-end
 # --create-heading
 # --open-url
@@ -23,10 +23,10 @@ options = {}
 #
 ARGV.each do |arg|
   case arg
-  when /^--in-(\w+)$/
-    options[:insert_into] = $1.gsub('_', ' ')
-  when '--in-top-level'
-    options[:insert_into] = 'top-level'
+  when /--in-(\w+)/
+    options[:insert_at] = $1.gsub('_', ' ')
+  when '--in-top-level', '--at-top-level'
+    options[:insert_at_top_level] = true
   when '--at-the-end'
     options[:insert_at_the_end] = true
   when '--create-heading'

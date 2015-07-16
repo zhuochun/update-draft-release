@@ -61,17 +61,84 @@ RSpec.describe UpdateDraftRelease::Runner do
     end
   end
 
-  context 'when things go well' do
-    let(:runner) { UpdateDraftRelease::Runner.new('repo/repo', { skip_confirmation: true }) }
-
+  describe 'when things go well' do
     before do
       allow(client).to receive(:releases).and_return([release, draft, release])
       allow(client).to receive(:commits).and_return([commit])
     end
 
-    it 'update the release' do
-      expect(client).to receive(:update_release).and_return(true)
-      runner.update_draft_release
+    context 'basic usage case' do
+      let(:runner) do
+        UpdateDraftRelease::Runner.new('repo/repo', { skip_confirmation: true })
+      end
+
+      it 'update the release' do
+        expect(client).to receive(:update_release)
+          .with('http://draft/', body: %(draft\r\n\r\nMessage abc))
+          .and_return(true)
+        runner.update_draft_release
+      end
+    end
+
+    context 'with insert-at-top-level' do
+      let(:runner) do
+        UpdateDraftRelease::Runner.new('repo/repo', {
+          skip_confirmation: true,
+          insert_at_top_level: true
+        })
+      end
+
+      before do
+        allow(draft).to receive(:body).and_return(%(# h1\r\nCommit A\r\n# h2))
+      end
+
+      it 'update the release' do
+        expect(client).to receive(:update_release)
+          .with('http://draft/', body: %(Message abc\r\n\r\n# h1\r\nCommit A\r\n# h2))
+          .and_return(true)
+        runner.update_draft_release
+      end
+    end
+
+    context 'with insert-at heading' do
+      let(:runner) do
+        UpdateDraftRelease::Runner.new('repo/repo', {
+          skip_confirmation: true,
+          insert_at: 'h2'
+        })
+      end
+
+      before do
+        allow(draft).to receive(:body).and_return(%(# h1\r\nCommit A\r\n# h2))
+      end
+
+      it 'update the release' do
+        expect(client).to receive(:update_release)
+          .with('http://draft/', body: %(# h1\r\nCommit A\r\n# h2\r\n\r\nMessage abc))
+          .and_return(true)
+        runner.update_draft_release
+      end
+    end
+
+    context 'with insert-at && create-heading' do
+      let(:runner) do
+        UpdateDraftRelease::Runner.new('repo/repo', {
+          skip_confirmation: true,
+          insert_at: 'h3',
+          create_heading: true
+        })
+      end
+
+      before do
+        allow(draft).to receive(:body).and_return(%(# h1\r\nCommit A\r\n# h2))
+      end
+
+      it 'update the release' do
+        expect(client).to receive(:update_release)
+          .with('http://draft/', body: %(# h1\r\nCommit A\r\n# h2\r\n\r\n## H3 ##\r\n\r\nMessage abc))
+          .and_return(true)
+        runner.update_draft_release
+      end
     end
   end
 end

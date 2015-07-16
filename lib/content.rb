@@ -1,5 +1,7 @@
 module UpdateDraftRelease
   class Content
+    HEADING_REGEX = /^\s*#+\s+.+/
+
     attr_reader :body, :line_separator, :lines
 
     def initialize(body)
@@ -13,7 +15,15 @@ module UpdateDraftRelease
     end
 
     def headings
-      @lines.select { |line| line.match(/^#+\s+.+/) }
+      @lines.select { |line| line.match(HEADING_REGEX) }
+    end
+
+    def heading_indexes
+      @lines.each_index.select { |i| @lines[i].match(HEADING_REGEX) }
+    end
+
+    def find_heading(heading)
+      @lines.index { |line| line.match(/^\s*#+\s+.*#{heading}.*/i)  }
     end
 
     def append(new_lines)

@@ -4,7 +4,7 @@
 require 'update_draft_release'
 
 if ARGV.empty? || ARGV[0].empty?
-  puts 'Missing: repository name'
+  puts 'Missing: repository name leh?'
   exit
 end
 
@@ -26,23 +26,25 @@ ARGV.each do |arg|
   when /\A--(in|on|at)-(\w+)\Z/
     puts "Assuming '#{arg}' is a Singlish way of saying '--in-#{$2}'" if $1 != 'in'
     options[:insert_at] = $2.gsub('_', ' ')
-  when '--in-top-level', '--at-top-level'
+  when /\A--(in|on|at)-top-level\Z/
+    puts "Assuming '#{arg}' is a Singlish way of saying '--at-top-level'" if $1 != 'at'
     options[:insert_at_top_level] = true
-  when '--at-the-end'
+  when /\A--(in|on|at)-the-end\Z/
+    puts "Assuming '#{arg}' is a Singlish way of saying '--at-the-end'" if $1 != 'at'
     options[:insert_at_the_end] = true
-  when '--create-heading'
+  when '--create-heading', '--create-section'
     options[:create_heading] = true
   when '--open-url'
     options[:open_url_after_update] = true
-  when '--skip-confirmation'
+  when '--skip-confirmation', /\A--can(?:-can)+\Z/
     options[:skip_confirmation] = true
   when /\A\w+\/\w+\Z/
     repo = arg
   when /\A--([-\w]+)\Z/
-    puts "Invalid option: --#{$1}"
+    puts "Invalid option: --#{$1}. So how?"
     exit
   else
-    puts "Hah? What's '#{arg}'? Should be 'user/repo' format lah."
+    puts "Bro, what's '#{arg}'? Don’t pray pray ah!"
     exit
   end
 end

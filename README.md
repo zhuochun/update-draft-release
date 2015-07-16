@@ -39,9 +39,10 @@ INFO: Release 'Draft' updated!
 - `--at-top-level`: Insert into top level.
 - `--at-the-end`: Insert at the end.
 - `--in-secton_name`: Insert into the section with heading 'Section Name'. E.g. `--in-gamma`.
-- `--create-heading`: Create a new section if not exists, used with `--in-secton_name`.
-- `--skip-confirmation`: Skip the final confirmation. :trollface:
-- `--open-url`: Open the release URL after update.
+- `--create-section`: Create a new section if not exists, used with `--in-secton_name`.
+- `--open-url`: Open the release URL after update succeed.
+- `--can-can`: Skip the final confirmation.
+- `--i-am-kiasu`: Make sure the final confirmation is not skipped.
 
 ## More
 

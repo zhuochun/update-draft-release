@@ -38,13 +38,16 @@ ARGV.each do |arg|
     options[:open_url_after_update] = true
   when '--skip-confirmation', /\A--can(?:-can)+\Z/
     options[:skip_confirmation] = true
+  when '--i-am-kiasu'
+    puts "Relak lah! Got confirmation deh."
+    options[:kiasu_mode] = true
   when /\A\w+\/\w+\Z/
     repo = arg
   when /\A--([-\w]+)\Z/
     puts "Invalid option: --#{$1}. So how?"
     exit
   else
-    puts "Bro, what's '#{arg}'? Don’t pray pray ah!"
+    puts "Bro, what's '#{arg}'? Don’t play play ah!"
     exit
   end
 end

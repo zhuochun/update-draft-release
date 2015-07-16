@@ -150,7 +150,7 @@ module UpdateDraftRelease
       puts body.to_s
       puts '##################################################'
 
-      return true if @opts[:skip_confirmation]
+      return true if !@opts[:kiasu_mode] && @opts[:skip_confirmation]
 
       print 'Ok? (Y/N): '
       $stdin.gets.chomp.upcase == 'Y'

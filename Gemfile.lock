@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    update-draft-release (0.2.1)
+    update-draft-release (0.2.3)
       netrc (~> 0.10.3)
       octokit (~> 3.0)
 

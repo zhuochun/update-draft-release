@@ -4,23 +4,13 @@
 require 'update_draft_release'
 
 if ARGV.empty? || ARGV[0].empty?
-  puts 'Missing: repository name leh?'
+  puts 'Missing: no repository name leh?'
   exit
 end
 
 repo = nil
 options = {}
 
-# Acceptable options:
-#
-# --in-gamma
-# --in-assignment
-# --in-top-level/--at-top-level
-# --at-the-end
-# --create-heading
-# --open-url
-# --skip-confirmation
-#
 ARGV.each do |arg|
   case arg
   when /\A--(in|on|at)-(\w+)\Z/
@@ -53,7 +43,7 @@ ARGV.each do |arg|
 end
 
 if repo.nil?
-  puts 'Missing: repo why you no repo'
+  puts 'Missing: repo why you no repo (╯°□°)╯︵ ┻━┻'
   exit
 end
 
@@ -61,5 +51,5 @@ begin
   runner = UpdateDraftRelease::Runner.new(repo, options)
   runner.update_draft_release
 rescue Exception => e
-  puts e.message
+  puts "#{e.message} (╯°Д°）╯︵ /(.□ . \)"
 end

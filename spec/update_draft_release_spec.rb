@@ -100,7 +100,7 @@ RSpec.describe UpdateDraftRelease::Runner do
       end
     end
 
-    context 'with insert-at heading' do
+    context 'with insert-at section' do
       let(:runner) do
         UpdateDraftRelease::Runner.new('repo/repo', {
           skip_confirmation: true,

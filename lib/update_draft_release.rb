@@ -81,7 +81,7 @@ module UpdateDraftRelease
       end.compact
 
       if lines.empty?
-        LOGGER.error "All commits have already added in releases"
+        LOGGER.warn "All commits existed in the releases"
         exit
       end
 
@@ -109,13 +109,13 @@ module UpdateDraftRelease
 
       headings = body.heading_indexes
 
-      if @opts[:insert_at_top_level] && headings
+      if @opts[:insert_at_top_level]
         return headings.empty? ? body.lines.size : [0, headings[0] - 1].max
       end
 
-      if @opts[:insert_at] && (index = body.find_heading(@opts[:insert_at]))
-        return body.lines.size if headings[-1] == index
-        return headings[headings.find(index) + 1] - 1
+      if @opts[:insert_at] && (heading_index = body.find_heading(@opts[:insert_at]))
+        return body.lines.size if headings[-1] == heading_index
+        return headings[headings.index(heading_index) + 1] - 1
       end
 
       if @opts[:insert_at] && @opts[:create_heading]

@@ -24,7 +24,7 @@ module UpdateDraftRelease
 
     def update_draft_release
       draft_release = get_draft_release
-      lines = get_user_commit_lines
+      lines = get_user_commit_lines.reverse
 
       body = Content.new(draft_release.body)
 
